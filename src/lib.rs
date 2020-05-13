@@ -11,30 +11,9 @@ pub trait MarkovChain {
     fn value(&self) -> f64;
 }
 
-pub trait Metropolis: MarkovChain {
-    fn steps(&mut self, mut rng: &mut impl Rng, n: usize, temperature: f64) -> f64 {
-        let mut new_energy = self.value();
-        let mut old_energy;
-
-        let beta = 1. / temperature;
-
-        for _ in 0..n {
-            self.change(&mut rng);
-            old_energy = new_energy;
-            new_energy = self.value();
-
-            if ((old_energy - new_energy) * beta).exp() > rng.gen::<f64>() {
-                self.undo();
-                new_energy = old_energy;
-            }
-        }
-        self.value()
-    }
-}
-
-pub struct MetropolisConfig<M> {
+pub struct Metropolis<MC> {
     /// file handle of the output file
-    model: M,
+    model: MC,
     /// file handle of the output file
     output: PathBuf,
     /// temperature at which to simulate
@@ -47,9 +26,9 @@ pub struct MetropolisConfig<M> {
     iterations: usize,
 }
 
-impl<M: Metropolis> MetropolisConfig<M> {
-    pub fn new(model: M) -> Self {
-        MetropolisConfig::<M> {
+impl<MC: MarkovChain> Metropolis<MC> {
+    pub fn new(model: MC) -> Self {
+        Metropolis::<MC> {
             model,
             output: "out.dat".into(),
             temperature: 1e10,
@@ -115,8 +94,6 @@ impl<M: Metropolis> MetropolisConfig<M> {
         Ok(())
     }
 }
-
-
 
 #[cfg(test)]
 mod tests {
