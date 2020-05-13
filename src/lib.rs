@@ -60,8 +60,8 @@ impl<MC: MarkovChain> Metropolis<MC> {
         self
     }
 
-    pub fn output(&mut self, filename: PathBuf) -> &mut Self {
-        self.output = filename;
+    pub fn output<P: Into::<PathBuf>>(&mut self, filename: P) -> &mut Self {
+        self.output = filename.into();
         self
     }
 
