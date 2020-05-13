@@ -1,6 +1,5 @@
 use std::io::{self, Write};
 use std::fs::File;
-use std::path::PathBuf;
 
 use rand::Rng;
 
@@ -14,8 +13,6 @@ pub trait MarkovChain {
 pub struct Metropolis<MC> {
     /// file handle of the output file
     model: MC,
-    /// file handle of the output file
-    output: PathBuf,
     /// temperature at which to simulate
     temperature: f64,
     /// how many change moves does one sweep have
@@ -30,7 +27,6 @@ impl<MC: MarkovChain> Metropolis<MC> {
     pub fn new(model: MC) -> Self {
         Metropolis::<MC> {
             model,
-            output: "out.dat".into(),
             temperature: 1e10,
             t_eq: 0,
             sweep: 1,
@@ -60,15 +56,7 @@ impl<MC: MarkovChain> Metropolis<MC> {
         self
     }
 
-    pub fn output<P: Into::<PathBuf>>(&mut self, filename: P) -> &mut Self {
-        self.output = filename.into();
-        self
-    }
-
-    pub fn run(&mut self, mut rng: &mut impl Rng) -> io::Result<(usize, usize)> {
-        let mut file = File::create(&self.output)?;
-        writeln!(file, "# some header maybe (TODO)")?;
-
+    pub fn run(&mut self, mut rng: &mut impl Rng, file: &mut File) -> io::Result<(usize, usize)> {
         let mut tries = 0;
         let mut rejects = 0;
 
