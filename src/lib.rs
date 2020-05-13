@@ -65,9 +65,12 @@ impl<MC: MarkovChain> Metropolis<MC> {
         self
     }
 
-    pub fn run(&mut self, mut rng: &mut impl Rng) -> io::Result<()> {
+    pub fn run(&mut self, mut rng: &mut impl Rng) -> io::Result<(usize, usize)> {
         let mut file = File::create(&self.output)?;
         writeln!(file, "# some header maybe (TODO)")?;
+
+        let mut tries = 0;
+        let mut rejects = 0;
 
         let beta = 1./self.temperature;
         let mut energy_new = self.model.value();
@@ -78,10 +81,12 @@ impl<MC: MarkovChain> Metropolis<MC> {
             for _ in 0..self.sweep {
                 energy_old = energy_new;
                 self.model.change(&mut rng);
+                tries += 1;
                 energy_new = self.model.value();
 
                 if ((energy_old - energy_new) * beta).exp() > rng.gen::<f64>() {
                     self.model.undo();
+                    rejects += 1;
                     energy_new = energy_old;
                 }
             }
@@ -91,7 +96,7 @@ impl<MC: MarkovChain> Metropolis<MC> {
             }
         }
 
-        Ok(())
+        Ok((tries, rejects))
     }
 }
 
