@@ -5,6 +5,17 @@ use crate::markovchain::MarkovChain;
 
 use rand::Rng;
 
+/// A struct used to perform Metropolis sampling on some model, which implements the
+/// `MarkovChain` trait. This follows the builder pattern to specify all parameters.
+/// The `run` method executes the sampling, e.g.:
+///
+/// ```
+/// let (tries, rejects) = Metropolis::new(model)
+///    .temperature(2.269)
+///    .sweep(100)
+///    .iterations(1000)
+///    .run(&mut rng, outfile)?;
+/// ```
 pub struct Metropolis<MC> {
     /// file handle of the output file
     model: MC,

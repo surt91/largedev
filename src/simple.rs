@@ -5,10 +5,21 @@ use rand::Rng;
 
 use crate::Model;
 
+/// An trait which implements the `reconstruct` method to generate a new uniform sample
+/// of the implementing model.
 pub trait DirectSamplable: Model {
     fn reconstruct(&mut self, rng: &mut impl Rng);
 }
 
+/// A struct used to perform simple sampling on some model, which implements the
+/// `DirectSamplable` trait. This follows the builder pattern to specify all parameters.
+/// The `run` method executes the sampling, e.g.:
+///
+/// ```
+/// let (mean, var) = Simple::new(model)
+///    .iterations(1000)
+///    .run(&mut rng, outfile)?;
+/// ```
 pub struct Simple<DS> {
     /// file handle of the output file
     model: DS,
@@ -45,6 +56,10 @@ impl<DS: DirectSamplable> Simple<DS> {
     }
 }
 
+/// `Mean` enables the calculation of the mean and variance on the fly without the
+/// need to save all encountered values, as necessary for the naive approach.
+/// It offers the `update` method to feed a new value into the mean and the `finalize`
+/// method to obtain the mean and variance of all feeded values.
 #[derive(Clone, Debug)]
 struct Mean {
     count: u64,
@@ -75,7 +90,7 @@ impl Mean {
         self.m2 += delta * delta2;
     }
 
-    // Retrieve the mean, variance and sample variance from an aggregate
+    /// Retrieve the mean, variance and sample variance from an aggregate
     fn finalize(&self) -> (f64, f64) {
         let (mean, variance, _sample_variance) = (self.mean, self.m2 / self.count as f64, self.m2 / (self.count - 1) as f64);
         if self.count < 2 {
