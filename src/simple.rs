@@ -3,9 +3,10 @@ use std::fs::File;
 
 use rand::Rng;
 
-pub trait DirectSamplable {
+use crate::Model;
+
+pub trait DirectSamplable: Model {
     fn reconstruct(&mut self, rng: &mut impl Rng);
-    fn value(&self) -> f64;
 }
 
 pub struct Simple<DS> {
@@ -36,7 +37,7 @@ impl<DS: DirectSamplable> Simple<DS> {
             self.model.reconstruct(&mut rng);
             let val = self.model.value();
             mean.update(val);
-            writeln!(file, "{}", val)?;
+            writeln!(file, "{}", self.model.save())?;
         }
 
         let (mean, var) = mean.finalize();
