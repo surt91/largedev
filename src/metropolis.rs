@@ -75,7 +75,7 @@ impl<MC: MarkovChain> Metropolis<MC> {
             }
 
             if i > self.t_eq {
-                writeln!(file, "{}", energy_new)?;
+                writeln!(file, "{}", self.model.save())?;
             }
         }
 
