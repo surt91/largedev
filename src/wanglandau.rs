@@ -126,7 +126,8 @@ impl<MC: MarkovChain> WangLandau<MC> {
 
         // start first phase
         while t < 10 || lnf > 1./t as f64 {
-            // println!("ln f = {}, t = {}", lnf, t);
+            // TODO: good logging system
+            println!("ln f = {}, t = {}", lnf, t);
             while self.h.min() == 0. {
                 for _ in 0..initial_num_iterations {
                     for _ in 0..self.sweep {
@@ -142,37 +143,34 @@ impl<MC: MarkovChain> WangLandau<MC> {
                     }
                     t += 1;
                 }
-                // LOG(LOG_DEBUG) << t << " : " << H;
 
                 // emergency abort: if too much of the time is spend in this stage,
                 // panic, trim the histogram and proceed
                 // this might lead to inaccurate results
-                // if(lnf == 1 && lnf_min > .2/t)
-                // {
-                //     LOG(LOG_WARNING) << "Spend 20% time in phase 1 at lnf=1: panic, trim the histogram and proceed";
-                //     LOG(LOG_WARNING) << "The results of this simulation may be inaccurate";
-                //     LOG(LOG_WARNING) << "You should restart with a different range or smaller lnf";
+                if lnf == 1. && self.lnf_final > 0.2 /t as f64 {
+                    println!("Spend 20% time in phase 1 at lnf=1: panic, trim the histogram and proceed");
+                    println!("The results of this simulation may be inaccurate");
+                    println!("You should restart with a different range or smaller lnf");
                 //     g.trim();
                 //     H.trim();
-                //     // lnf = lnf_min;
-                //     break;
-                // }
+                    // lnf = lnf_min;
+                    break;
+                }
             }
             // run until we have one entry in each bin
             self.h.reset();
             lnf /= 2.;
         }
 
-        // if(lnf <= lnf_min)
-        // {
-        //     LOG(LOG_WARNING) << "phase 1 took too long, phase 2 will not be performed";
-        //     LOG(LOG_WARNING) << "The results of this simulation may be inaccurate";
-        //     LOG(LOG_WARNING) << "You should restart with a different range, smaller windows or smaller lnf";
-        // }
+        if lnf <= self.lnf_final {
+            println!("phase 1 took too long, phase 2 will not be performed");
+            println!("The results of this simulation may be inaccurate");
+            println!("You should restart with a different range, smaller windows or smaller lnf");
+        }
 
         //start second phase
         // let status = 1./t as f64;
-        // LOG(LOG_INFO) << "begin phase 2 (power-law decrease) at t=" << t;
+        println!("begin phase 2 (power-law decrease) at t = {}", t);
         while lnf > self.lnf_final {
             lnf = 1./t as f64;
 
@@ -195,7 +193,7 @@ impl<MC: MarkovChain> WangLandau<MC> {
 
         // the entropic sampling phase should be twice as long as
         // the previous phase
-        // LOG(LOG_INFO) << "begin phase 3 (entropic sampling) at t=" << t << " until t=" << 3*t;
+        println!("begin phase 3 (entropic sampling) at t = {} until t = {}", t, 3*t);
         let t_limit = 2*t;
         for _ in 0..t_limit {
             for _ in 0..self.sweep {
