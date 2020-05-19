@@ -4,8 +4,14 @@ pub use simple::{DirectSamplable, Simple};
 mod markovchain;
 pub use markovchain::MarkovChain;
 
+mod histogram;
+pub use histogram::Histogram;
+
 mod metropolis;
 pub use metropolis::Metropolis;
+
+mod wanglandau;
+pub use wanglandau::WangLandau;
 
 /// The fundamental trait of any model, which defines at least one observable to measure
 pub trait Model {
