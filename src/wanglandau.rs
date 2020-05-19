@@ -122,7 +122,7 @@ impl<MC: MarkovChain> WangLandau<MC> {
         self.find_start(&mut rng);
 
         let mut t = 0;
-        let mut lnf = 1f64.exp();
+        let mut lnf = 1.;
 
         // start first phase
         while t < 10 || lnf > 1./t as f64 {
@@ -153,7 +153,7 @@ impl<MC: MarkovChain> WangLandau<MC> {
                     println!("You should restart with a different range or smaller lnf");
                 //     g.trim();
                 //     H.trim();
-                    // lnf = lnf_min;
+                    lnf = self.lnf_final;
                     break;
                 }
             }
