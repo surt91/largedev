@@ -83,6 +83,24 @@ impl<MC: MarkovChain> WangLandau<MC> {
         }
     }
 
+    fn accept(&mut self, old_e: f64, rng: &mut impl Rng) -> f64 {
+        let mut new_e = self.model.value();
+
+        let p_acc = match (self.g.at(old_e), self.g.at(new_e)) {
+            (Some(old), Some(new)) => (old - new).exp(),
+            // if one of the values is outside of the histogram range,
+            // reject the proposal (-> p_acc = 0)
+            _ => 0.,
+        };
+
+        if p_acc < rng.gen() {
+            self.model.undo();
+            new_e = old_e;
+        }
+
+        new_e
+    }
+
     /** Implementation of the "Fast" 1/t Wang Landau algorithm extended by Entropic Sampling.
      *
      * Larger values of the final refinement parameter are ok, since
@@ -95,6 +113,7 @@ impl<MC: MarkovChain> WangLandau<MC> {
      *   * http://arxiv.org/pdf/cond-mat/0701672.pdf ("fast")
      *   * http://arxiv.org/pdf/1107.2951v1.pdf (entropic sampling)
      */
+    #[allow(clippy::float_cmp)]
     pub fn run(&mut self, mut rng: &mut impl Rng, file: &mut File) -> io::Result<(usize, usize)> {
         let mut tries = 0;
         let mut rejects = 0;
@@ -103,34 +122,20 @@ impl<MC: MarkovChain> WangLandau<MC> {
         self.find_start(&mut rng);
 
         let mut t = 0;
-        // let mut ctr = 0;
-        // let mut last = 0;
         let mut lnf = 1f64.exp();
 
         // start first phase
         while t < 10 || lnf > 1./t as f64 {
-            println!("ln f = {}, t = {}", lnf, t);
+            // println!("ln f = {}, t = {}", lnf, t);
             while self.h.min() == 0. {
                 for _ in 0..initial_num_iterations {
                     for _ in 0..self.sweep {
                         let old_e = self.model.value();
                         self.model.change(&mut rng);
-                        let mut new_e = self.model.value();
+                        let new_e = self.accept(old_e, &mut rng);
+
                         tries += 1;
-
-                        let p_acc = match (self.g.at(old_e), self.g.at(new_e)) {
-                            (Some(old), Some(new)) => (old - new).exp(),
-                            // if one of the values is outside of the histogram range,
-                            // reject the proposal (-> p_acc = 0)
-                            _ => 0.,
-                        };
-
-                        if p_acc < rng.gen() {
-                            self.model.undo();
-                            rejects += 1;
-                            new_e = old_e;
-                        }
-                        // ctr += 1;
+                        rejects += if new_e == old_e {1} else {0};
 
                         self.g.add(new_e, lnf);
                         self.h.count(new_e);
@@ -171,30 +176,13 @@ impl<MC: MarkovChain> WangLandau<MC> {
         while lnf > self.lnf_final {
             lnf = 1./t as f64;
 
-            // if(Logger::verbosity >= LOG_DEBUG && lnf < status)
-            // {
-            //     LOG(LOG_DEBUG) << "ln f = " << lnf << ", t = " << t;
-            //     status /= 2;
-            // }
-
             for _ in 0..self.sweep {
                 let old_e = self.model.value();
                 self.model.change(&mut rng);
-                let mut new_e = self.model.value();
+                let new_e = self.accept(old_e, &mut rng);
+
                 tries += 1;
-
-                let p_acc = match (self.g.at(old_e), self.g.at(new_e)) {
-                    (Some(old), Some(new)) => (old - new).exp(),
-                    // if one of the values is outside of the histogram range,
-                    // reject the proposal (-> p_acc = 0)
-                    _ => 0.,
-                };
-
-                if p_acc < rng.gen() {
-                    self.model.undo();
-                    rejects += 1;
-                    new_e = old_e;
-                }
+                rejects += if new_e == old_e {1} else {0};
 
                 self.g.add(new_e, lnf);
             }
@@ -213,21 +201,11 @@ impl<MC: MarkovChain> WangLandau<MC> {
             for _ in 0..self.sweep {
                 let old_e = self.model.value();
                 self.model.change(&mut rng);
-                let mut new_e = self.model.value();
+                let new_e = self.accept(old_e, &mut rng);
+
                 tries += 1;
+                rejects += if new_e == old_e {1} else {0};
 
-                let p_acc = match (self.g.at(old_e), self.g.at(new_e)) {
-                    (Some(old), Some(new)) => (old - new).exp(),
-                    // if one of the values is outside of the histogram range,
-                    // reject the proposal (-> p_acc = 0)
-                    _ => 0.,
-                };
-
-                if p_acc < rng.gen() {
-                    self.model.undo();
-                    rejects += 1;
-                    new_e = old_e;
-                }
                 self.h.count(new_e);
             }
             // write out samples for correlation
