@@ -125,6 +125,10 @@ impl Histogram {
         ((n+1) as f64 / self.bins as f64) * (self.high - self.low) + self.low
     }
 
+    pub fn borders(&self) -> Vec<f64> {
+        (0..self.bins+1).map(|i| (self.left_border(i))).collect()
+    }
+
     pub fn centers(&self) -> Vec<f64> {
         (0..self.bins).map(|i| (self.left_border(i) + self.right_border(i))/2.).collect()
     }

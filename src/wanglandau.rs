@@ -218,12 +218,17 @@ impl<MC: MarkovChain> WangLandau<MC> {
             *self.g.idx(j) += *self.h.idx(j)/self.h.mean();
         }
 
-        let centers = self.g.centers();
+        let borders = self.g.borders();
         let data = self.g.data();
 
-        for (c, d) in centers.iter().zip(data) {
-            writeln!(file, "{} {}\n", c, d)?;
+        for b in borders.iter() {
+            write!(file, "{} ", b);
         }
+        writeln!(file);
+        for d in data.iter() {
+            write!(file, "{} ", d);
+        }
+        writeln!(file);
 
         Ok((tries, rejects))
     }
