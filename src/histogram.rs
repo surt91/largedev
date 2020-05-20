@@ -15,18 +15,18 @@ impl Histogram {
             low,
             high,
             bins,
-            histogram: vec![0.; bins+1],
+            histogram: vec![0.; bins],
         }
     }
 
     pub fn add(&mut self, value: f64, amount: f64) {
-        if value > self.low && value <= self.high {
+        if value > self.low && value < self.high {
             self.histogram[((value-self.low)/(self.high - self.low) * self.bins as f64) as usize] += amount;
         }
     }
 
     pub fn count(&mut self, value: f64) {
-        if value > self.low && value <= self.high {
+        if value > self.low && value < self.high {
             self.histogram[((value-self.low)/(self.high - self.low) * self.bins as f64) as usize] += 1.;
         }
     }
