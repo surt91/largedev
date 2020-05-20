@@ -77,7 +77,7 @@ impl<MC: MarkovChain> WangLandau<MC> {
                 self.model.undo();
             }
 
-            if new_e < self.low || new_e > self.high {
+            if new_e > self.low && new_e < self.high {
                 break;
             }
         }
@@ -93,7 +93,7 @@ impl<MC: MarkovChain> WangLandau<MC> {
             _ => 0.,
         };
 
-        if p_acc < rng.gen() {
+        if p_acc < rng.gen::<f64>() {
             self.model.undo();
             new_e = old_e;
         }
