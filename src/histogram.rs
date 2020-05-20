@@ -73,6 +73,50 @@ impl Histogram {
             .collect()
     }
 
+    pub fn bounds(&self) -> (f64, f64) {
+        (self.low, self.high)
+    }
+
+    /// shrink the range such that there are no zero bins
+    /// panics if the zero bins are not at the border
+    pub fn trim(&mut self) {
+        // trim left
+        let mut i = 0;
+        let lb = loop {
+            if *self.idx(i) > 0. {
+                break i
+            }
+            i += 1;
+        };
+        if lb > 0 {
+            let lower = self.low + lb as f64 * (self.high - self.low) / self.bins as f64;
+            let num_bins = self.bins - lb;
+            let mut hist = vec![0.; num_bins];
+            for i in 0..num_bins {
+                hist[i] = self.histogram[i+lb]
+            }
+            self.low = lower;
+            self.bins = num_bins;
+            self.histogram = hist;
+        }
+
+        // trim right
+        let mut i = 0;
+        let rb = loop {
+            if *self.idx(self.bins - 1 - i) > 0. {
+                break i
+            }
+            i += 1;
+        };
+        if rb > 0 {
+            let higher = self.low + (self.bins - rb) as f64 * (self.high - self.low) / self.bins as f64;
+            let num_bins = self.bins - rb;
+            self.histogram.resize_with(num_bins, || panic!());
+            self.high = higher;
+            self.bins = num_bins;
+        }
+    }
+
     fn left_border(&self, n: usize) -> f64 {
         (n as f64 / self.bins as f64) * (self.high - self.low) + self.low
     }

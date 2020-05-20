@@ -151,10 +151,11 @@ impl<MC: MarkovChain> WangLandau<MC> {
                     println!("Spend 20% time in phase 1 at lnf=1: panic, trim the histogram and proceed");
                     println!("The results of this simulation may be inaccurate");
                     println!("You should restart with a different range or smaller lnf");
+                    self.g.trim();
+                    self.h.trim();
                     println!("g = {:?}", self.g);
                     println!("h = {:?}", self.h);
-                //     g.trim();
-                //     H.trim();
+                    assert_eq!(self.g.bounds(), self.h.bounds());
                     lnf = self.lnf_final;
                     break;
                 }
