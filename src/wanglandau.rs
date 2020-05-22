@@ -147,16 +147,19 @@ impl<MC: MarkovChain> WangLandau<MC> {
                 // emergency abort: if too much of the time is spend in this stage,
                 // panic, trim the histogram and proceed
                 // this might lead to inaccurate results
-                if lnf == 1. && self.lnf_final > 0.2 /t as f64 {
-                    println!("Spend 20% time in phase 1 at lnf=1: panic, trim the histogram and proceed");
+                if lnf > 0.9 && self.lnf_final > 0.2 / t as f64 {
+                    println!("Spend 20% time in phase 1 at lnf=1: panic, trim and reset the histograms and restart");
                     println!("The results of this simulation may be inaccurate");
                     println!("You should restart with a different range or smaller lnf");
                     self.g.trim();
                     self.h.trim();
                     println!("g = {:?}", self.g);
                     println!("h = {:?}", self.h);
+                    self.g.reset();
+                    self.h.reset();
                     assert_eq!(self.g.bounds(), self.h.bounds());
-                    lnf = self.lnf_final;
+                    lnf = 2.;
+                    t = 0;
                     break;
                 }
             }
