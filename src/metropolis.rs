@@ -78,7 +78,8 @@ impl<MC: MarkovChain> Metropolis<MC> {
                 tries += 1;
                 energy_new = self.model.value();
 
-                if ((energy_old - energy_new) * beta).exp() < rng.gen::<f64>() {
+                let p_acc = ((energy_old - energy_new) * beta).exp();
+                if p_acc < rng.gen_range(0., 1.) {
                     self.model.undo();
                     rejects += 1;
                     energy_new = energy_old;
