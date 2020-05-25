@@ -225,13 +225,13 @@ impl<MC: MarkovChain> WangLandau<MC> {
         let data = self.g.data();
 
         for b in borders.iter() {
-            write!(file, "{} ", b);
+            write!(file, "{} ", b)?;
         }
-        writeln!(file);
+        writeln!(file)?;
         for d in data.iter() {
-            write!(file, "{} ", d);
+            write!(file, "{} ", d)?;
         }
-        writeln!(file);
+        writeln!(file)?;
 
         Ok((tries, rejects))
     }
