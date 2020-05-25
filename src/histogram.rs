@@ -36,7 +36,7 @@ impl Histogram {
     }
 
     pub fn at(&self, value: f64) -> Option<f64> {
-        if value > self.low && value <= self.high {
+        if value > self.low && value < self.high {
             let idx = ((value-self.low)/(self.high - self.low) * self.bins as f64) as usize;
             Some(self.histogram[idx])
         } else {
