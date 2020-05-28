@@ -8,6 +8,7 @@ pub struct Histogram {
     histogram: Vec<f64>,
 }
 
+/// Als always, low is included, high is excluded
 impl Histogram {
     pub fn new(low: f64, high: f64, bins: usize) -> Histogram {
         assert!(low < high);
@@ -20,13 +21,13 @@ impl Histogram {
     }
 
     pub fn add(&mut self, value: f64, amount: f64) {
-        if value > self.low && value < self.high {
+        if value >= self.low && value < self.high {
             self.histogram[((value-self.low)/(self.high - self.low) * self.bins as f64) as usize] += amount;
         }
     }
 
     pub fn count(&mut self, value: f64) {
-        if value > self.low && value < self.high {
+        if value >= self.low && value < self.high {
             self.histogram[((value-self.low)/(self.high - self.low) * self.bins as f64) as usize] += 1.;
         }
     }
@@ -36,7 +37,7 @@ impl Histogram {
     }
 
     pub fn at(&self, value: f64) -> Option<f64> {
-        if value > self.low && value < self.high {
+        if value >= self.low && value < self.high {
             let idx = ((value-self.low)/(self.high - self.low) * self.bins as f64) as usize;
             Some(self.histogram[idx])
         } else {
