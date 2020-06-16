@@ -93,4 +93,40 @@ impl<MC: MarkovChain> Metropolis<MC> {
 
         Ok((tries, rejects))
     }
+
+    pub fn downhill(&mut self, mut rng: &mut impl Rng) -> f64 {
+        let mut energy_new = self.model.value();
+        let mut energy_old;
+
+        // simulate
+        for _ in 0..self.iterations {
+            energy_old = energy_new;
+            self.model.change(&mut rng);
+            energy_new = self.model.value();
+
+            if energy_old > energy_new {
+                self.model.undo();
+                energy_new = energy_old;
+            }
+        }
+        energy_new
+    }
+
+    pub fn uphill(&mut self, mut rng: &mut impl Rng) -> f64 {
+        let mut energy_new = self.model.value();
+        let mut energy_old;
+
+        // simulate
+        for _ in 0..self.iterations {
+            energy_old = energy_new;
+            self.model.change(&mut rng);
+            energy_new = self.model.value();
+
+            if energy_old < energy_new {
+                self.model.undo();
+                energy_new = energy_old;
+            }
+        }
+        energy_new
+    }
 }
