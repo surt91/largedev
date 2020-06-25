@@ -19,6 +19,11 @@ pub trait Model {
     /// e.g. for a Metropolis algorithm on this chain, it should return the energy
     fn value(&self) -> f64;
 
+    /// return the header for the values returned in `save`
+    fn header(&self) -> String {
+        "# value".into()
+    }
+
     /// a method which returns the string which should be saved
     /// for each sample by default it is `value()`, but can be overwritten
     /// to save multiple observables per sample

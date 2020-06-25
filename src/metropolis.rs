@@ -70,6 +70,8 @@ impl<MC: MarkovChain> Metropolis<MC> {
         let mut energy_new = self.model.value();
         let mut energy_old;
 
+        writeln!(file, "{}", self.model.header())?;
+
         // simulate
         for i in 0..self.t_eq + self.iterations {
             for _ in 0..self.sweep {
