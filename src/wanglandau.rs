@@ -93,9 +93,13 @@ impl<MC: MarkovChain> WangLandau<MC> {
             _ => 0.,
         };
 
+        // println!("{} ({:?}) -> {} ({:?}) ({})", old_e, self.g.at(old_e), new_e, self.g.at(new_e), p_acc);
+        // println!("{:?}", self.g);
+
         if p_acc < rng.gen::<f64>() {
             self.model.undo();
             new_e = old_e;
+            // println!("reject!");
         }
 
         new_e
@@ -228,6 +232,7 @@ impl<MC: MarkovChain> WangLandau<MC> {
             *self.g.idx(j) += *self.h.idx(j)/self.h.mean();
         }
 
+        // let centers = self.g.centers();
         let borders = self.g.borders();
         let data = self.g.data();
 
@@ -240,6 +245,15 @@ impl<MC: MarkovChain> WangLandau<MC> {
         }
         writeln!(file)?;
 
+        // for (c, d) in centers.iter().zip(data) {
+        //     writeln!(file, "{} {}", c, d)?;
+        // }
+
         Ok((tries, rejects))
+    }
+
+    pub fn exec(mut self, mut rng: &mut impl Rng, mut file: &mut File) -> io::Result<MC> {
+        self.run(&mut rng, &mut file)?;
+        Ok(self.model)
     }
 }

@@ -54,6 +54,11 @@ impl<DS: DirectSamplable> Simple<DS> {
         let (mean, var) = mean.finalize();
         Ok((mean, var))
     }
+
+    pub fn exec(mut self, mut rng: &mut impl Rng, mut file: &mut File) -> io::Result<DS> {
+        self.run(&mut rng, &mut file)?;
+        Ok(self.model)
+    }
 }
 
 /// `Mean` enables the calculation of the mean and variance on the fly without the

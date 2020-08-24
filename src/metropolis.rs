@@ -96,6 +96,11 @@ impl<MC: MarkovChain> Metropolis<MC> {
         Ok((tries, rejects))
     }
 
+    pub fn exec(mut self, mut rng: &mut impl Rng, mut file: &mut File) -> io::Result<MC> {
+        self.run(&mut rng, &mut file)?;
+        Ok(self.model)
+    }
+
     pub fn downhill(&mut self, mut rng: &mut impl Rng) -> f64 {
         let mut energy_new = self.model.value();
         let mut energy_old;
